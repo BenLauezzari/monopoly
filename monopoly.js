@@ -3009,5 +3009,9 @@ window.onload = function() {
 
 	$("#trade-menu-item").click(game.trade);
 
-
+	//localise currency on trade screen
+	var currencySymbolList = document.getElementsByClassName("localCurrency");
+	for(i = 0; i < currencySymbolList.length; i ++) {
+		currencySymbolList[i].innerText = currencySymbol();
+	}
 };
