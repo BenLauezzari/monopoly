@@ -2150,7 +2150,7 @@ function showStats() {
 		}
 
 		if (!write) {
-			HTML += p.name + " dosen't have any properties.";
+			HTML += p.name + " doesn't have any properties.";
 		} else {
 			HTML += "</table>";
 		}
