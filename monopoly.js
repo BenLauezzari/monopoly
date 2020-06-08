@@ -2945,7 +2945,7 @@ window.onload = function() {
 		var s = square[checkedProperty];
 
 		if (s.mortgage) {
-			if (player[s.owner].money < Math.round(s.price * 0.6)) {
+			if (player[s.owner].money < mortgageRedemption(s.price)) {
 				popup("<p>You need " + currencySymbol() + (mortgageRedemption(s.price) - player[s.owner].money) + " more to unmortgage " + s.name + ".</p>");
 
 			} else {
