@@ -1013,7 +1013,7 @@ function Game() {
 		for (var i = 0; i < 40; i++) {
 			sq = square[i];
 			if (sq.owner == p.index && sq.mortgage) {
-				price = Math.round(sq.price * 0.5);
+				price = mortgageValue(sq.price);
 
 				HTML += "<tr><td class='propertycellcolor' style='background: " + sq.color + ";";
 
@@ -1059,11 +1059,11 @@ function Game() {
 		for (var i = 0; i < 40; i++) {
 			sq = square[i];
 			if (sq.owner == p.index) {
-				// Mortgaged properties will be tranfered by bankruptcyUnmortgage();
+				// Mortgaged properties will be transfered by bankruptcyUnmortgage();
 				if (!sq.mortgage) {
 					sq.owner = p.creditor;
 				} else {
-					bankruptcyUnmortgageFee += Math.round(sq.price * 0.1);
+					bankruptcyUnmortgageFee += mortgageInterest(sq.price);
 				}
 
 				if (sq.house > 0) {
@@ -1101,11 +1101,25 @@ function Game() {
 			popup("<p>" + pcredit.name + ", you must pay " + currencySymbol() + bankruptcyUnmortgageFee + " interest on the mortgaged properties you received from " + p.name + ".</p>", function() {player[pcredit.index].pay(bankruptcyUnmortgageFee, 0); game.bankruptcyUnmortgage();});
 		}
 	};
-
 }
 
 var game;
 
+//calculate the amount raised by mortgaging a property
+//price is the property price
+function mortgageValue(price) {
+	return Math.round(price * 0.5);
+}
+
+//calculate the interest due on a mortgage
+function mortgageInterest(price) {
+	return Math.round(mortgageValue(price) * 0.1);
+}
+
+//calculate the cost of redeeming the mortgage
+function mortgageRedemption(price) {
+	return mortgageValue(price) + mortgageInterest(price);
+}
 
 function Player(name, color) {
 	this.name = name;
@@ -1586,15 +1600,15 @@ function updateOption() {
 	document.getElementById("mortgagebutton").disabled = false;
 
 	if (sq.mortgage) {
-		document.getElementById("mortgagebutton").value = "Unmortgage (" + currencySymbol() + Math.round(sq.price * 0.6) + ")";
-		document.getElementById("mortgagebutton").title = "Unmortgage " + sq.name + " for " + currencySymbol() + Math.round(sq.price * 0.6) + ".";
+		document.getElementById("mortgagebutton").value = "Unmortgage (" + currencySymbol() + mortgageRedemption(sq.price) + ")";
+		document.getElementById("mortgagebutton").title = "Unmortgage " + sq.name + " for " + currencySymbol() + mortgageRedemption(sq.price) + ".";
 		$("#buyhousebutton").hide();
 		$("#sellhousebutton").hide();
 
 		allGroupUnmortgaged = false;
 	} else {
-		document.getElementById("mortgagebutton").value = "Mortgage (" + currencySymbol() + (sq.price * 0.5) + ")";
-		document.getElementById("mortgagebutton").title = "Mortgage " + sq.name + " for " + currencySymbol() + (sq.price * 0.5) + ".";
+		document.getElementById("mortgagebutton").value = "Mortgage (" + currencySymbol() + mortgageValue(sq.price) + ")";
+		document.getElementById("mortgagebutton").title = "Mortgage " + sq.name + " for " + currencySymbol() + mortgageValue(sq.price) + ".";
 
 		if (sq.groupNumber >= 3) {
 			$("#buyhousebutton").show();
@@ -2243,8 +2257,8 @@ function mortgage(index) {
 		return false;
 	}
 
-	var mortgagePrice = Math.round(sq.price * 0.5);
-	var unmortgagePrice = Math.round(sq.price * 0.6);
+	var mortgagePrice = mortgageValue(sq.price);
+	var unmortgagePrice = mortgageRedemption(sq.price);
 
 	sq.mortgage = true;
 	p.money += mortgagePrice;
@@ -2262,8 +2276,8 @@ function mortgage(index) {
 function unmortgage(index) {
 	var sq = square[index];
 	var p = player[sq.owner];
-	var unmortgagePrice = Math.round(sq.price * 0.6);
-	var mortgagePrice = Math.round(sq.price * 0.5);
+	var mortgagePrice = mortgageValue(sq.price);
+	var unmortgagePrice = mortgageRedemption(sq.price);
 
 	if (unmortgagePrice > p.money || !sq.mortgage) {
 		return false;
@@ -2932,15 +2946,15 @@ window.onload = function() {
 
 		if (s.mortgage) {
 			if (player[s.owner].money < Math.round(s.price * 0.6)) {
-				popup("<p>You need " + currencySymbol() + (Math.round(s.price * 0.6) - player[s.owner].money) + " more to unmortgage " + s.name + ".</p>");
+				popup("<p>You need " + currencySymbol() + (mortgageRedemption(s.price) - player[s.owner].money) + " more to unmortgage " + s.name + ".</p>");
 
 			} else {
-				popup("<p>" + player[s.owner].name + ", are you sure you want to unmortgage " + s.name + " for " + currencySymbol() + Math.round(s.price * 0.6) + "?</p>", function() {
+				popup("<p>" + player[s.owner].name + ", are you sure you want to unmortgage " + s.name + " for " + currencySymbol() + mortgageRedemption(s.price) + "?</p>", function() {
 					unmortgage(checkedProperty);
 				}, "Yes/No");
 			}
 		} else {
-			popup("<p>" + player[s.owner].name + ", are you sure you want to mortgage " + s.name + " for " + currencySymbol() + Math.round(s.price * 0.5) + "?</p>", function() {
+			popup("<p>" + player[s.owner].name + ", are you sure you want to mortgage " + s.name + " for " + currencySymbol() + mortgageValue(s.price) + "?</p>", function() {
 				mortgage(checkedProperty);
 			}, "Yes/No");
 		}
